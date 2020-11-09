@@ -4,7 +4,10 @@
 
 use actix::prelude::*;
 use rand::{self, rngs::ThreadRng, Rng};
+use serde::{Deserialize, Serialize};
+use serde_json::{json, Result};
 use std::collections::{HashMap, HashSet};
+use std::f64::consts::PI;
 
 /// Chat server sends this messages to session
 #[derive(Message)]
@@ -107,10 +110,10 @@ impl Handler<Connect> for ChatServer {
     type Result = usize;
 
     fn handle(&mut self, msg: Connect, _: &mut Context<Self>) -> Self::Result {
-        println!("Someone joined");
+        // println!("Someone joined");
 
         // notify all users in same room
-        self.send_message(&"Main".to_owned(), "Someone joined", 0);
+        // self.send_message(&"Main".to_owned(), "Someone joined", 0);
 
         // register session with random id
         let id = self.rng.gen::<usize>();
@@ -132,7 +135,7 @@ impl Handler<Disconnect> for ChatServer {
     type Result = ();
 
     fn handle(&mut self, msg: Disconnect, _: &mut Context<Self>) {
-        println!("Someone disconnected");
+        // println!("Someone disconnected");
 
         let mut rooms: Vec<String> = Vec::new();
 
@@ -146,10 +149,43 @@ impl Handler<Disconnect> for ChatServer {
             }
         }
         // send message to other users
-        for room in rooms {
-            self.send_message(&room, "Someone disconnected", 0);
-        }
+        // for room in rooms {
+        //     self.send_message(&room, "Someone disconnected", 0);
+        // }
     }
+}
+
+#[derive(Serialize, Deserialize)]
+struct Rotation {
+    alpha: f64,
+    beta: f64,
+    gamma: f64,
+}
+
+#[derive(Serialize, Deserialize)]
+struct DeviceMotionMeasurement {
+    rotation: Rotation,
+}
+
+fn data_processing(data: &str) -> Result<String> {
+    let a = 5.71559214e-05; // 与舵机相匹配
+    let b = 3.60082305e-02; // 与舵机相匹配
+    let c = 2.50000000;
+    let direction = 90.0;
+    let motion: DeviceMotionMeasurement = serde_json::from_str(data)?;
+
+    let vertical_direction = direction - (motion.rotation.gamma + PI / 2.0) / (PI / 2.0) * 90.0;
+    let level_direction = direction - (motion.rotation.alpha + PI / 2.0) / (PI / 2.0) * 90.0;
+    let level_direction = 180.0 - level_direction;
+
+    let vertical_duty = a * vertical_direction * vertical_direction + b * vertical_direction + c;
+    let level_duty = a * level_direction * level_direction + b * level_direction + c;
+
+    let output = json!({
+        "verticalDuty": vertical_duty,
+        "levelDuty": level_duty,
+    });
+    Ok(output.to_string())
 }
 
 /// Handler for Message message.
@@ -157,7 +193,9 @@ impl Handler<ClientMessage> for ChatServer {
     type Result = ();
 
     fn handle(&mut self, msg: ClientMessage, _: &mut Context<Self>) {
-        self.send_message(&msg.room, msg.msg.as_str(), msg.id);
+        if let Ok(data) = data_processing(msg.msg.as_str()) {
+            self.send_message(&msg.room, data.as_str(), msg.id)
+        }
     }
 }
 
@@ -192,15 +230,15 @@ impl Handler<Join> for ChatServer {
             }
         }
         // send message to other users
-        for room in rooms {
-            self.send_message(&room, "Someone disconnected", 0);
-        }
+        // for room in rooms {
+        //     self.send_message(&room, "Someone disconnected", 0);
+        // }
 
         self.rooms
             .entry(name.clone())
             .or_insert_with(HashSet::new)
             .insert(id);
 
-        self.send_message(&name, "Someone connected", id);
+        // self.send_message(&name, "Someone connected", id);
     }
 }
