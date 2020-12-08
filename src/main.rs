@@ -22,8 +22,6 @@ async fn chat_route(
         WsChatSession {
             id: 0,
             hb: Instant::now(),
-            room: "Main".to_owned(),
-            name: None,
             addr: srv.get_ref().clone(),
         },
         &req,
@@ -37,10 +35,6 @@ struct WsChatSession {
     /// Client must send ping at least once per 10 seconds (CLIENT_TIMEOUT),
     /// otherwise we drop connection.
     hb: Instant,
-    /// joined room
-    room: String,
-    /// peer name
-    name: Option<String>,
     /// Chat server
     addr: Addr<server::ChatServer>,
 }
@@ -114,68 +108,10 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsChatSession {
             }
             ws::Message::Text(text) => {
                 let m = text.trim();
-                // we check for /sss type of messages
-                if m.starts_with('/') {
-                    let v: Vec<&str> = m.splitn(2, ' ').collect();
-                    match v[0] {
-                        "/list" => {
-                            // Send ListRooms message to chat server and wait for
-                            // response
-                            println!("List rooms");
-                            self.addr
-                                .send(server::ListRooms)
-                                .into_actor(self)
-                                .then(|res, _, ctx| {
-                                    match res {
-                                        Ok(rooms) => {
-                                            for room in rooms {
-                                                ctx.text(room);
-                                            }
-                                        }
-                                        _ => println!("Something is wrong"),
-                                    }
-                                    fut::ready(())
-                                })
-                                .wait(ctx)
-                            // .wait(ctx) pauses all events in context,
-                            // so actor wont receive any new messages until it get list
-                            // of rooms back
-                        }
-                        "/join" => {
-                            if v.len() == 2 {
-                                self.room = v[1].to_owned();
-                                self.addr.do_send(server::Join {
-                                    id: self.id,
-                                    name: self.room.clone(),
-                                });
-
-                                ctx.text("joined");
-                            } else {
-                                ctx.text("!!! room name is required");
-                            }
-                        }
-                        "/name" => {
-                            if v.len() == 2 {
-                                self.name = Some(v[1].to_owned());
-                            } else {
-                                ctx.text("!!! name is required");
-                            }
-                        }
-                        _ => ctx.text(format!("!!! unknown command: {:?}", m)),
-                    }
-                } else {
-                    let msg = if let Some(ref name) = self.name {
-                        format!("{}: {}", name, m)
-                    } else {
-                        m.to_owned()
-                    };
-                    // send message to chat server
-                    self.addr.do_send(server::ClientMessage {
-                        id: self.id,
-                        msg,
-                        room: self.room.clone(),
-                    })
-                }
+                let msg = m.to_owned();
+                // send message to chat server
+                self.addr
+                    .do_send(server::ClientMessage { id: self.id, msg })
             }
             ws::Message::Binary(_) => println!("Unexpected binary"),
             ws::Message::Close(reason) => {
@@ -218,8 +154,6 @@ impl WsChatSession {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    env_logger::init();
-
     // Start chat server actor
     let server = server::ChatServer::default().start();
 
@@ -238,7 +172,7 @@ async fn main() -> std::io::Result<()> {
             // static resources
             .service(fs::Files::new("/static/", "static/"))
     })
-    .bind("0.0.0.0:24800")?
+    .bind("0.0.0.0:8080")?
     .run()
     .await
 }
