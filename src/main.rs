@@ -238,7 +238,7 @@ async fn main() -> std::io::Result<()> {
             // static resources
             .service(fs::Files::new("/static/", "static/"))
     })
-    .bind("127.0.0.1:8080")?
+    .bind("0.0.0.0:24800")?
     .run()
     .await
 }
