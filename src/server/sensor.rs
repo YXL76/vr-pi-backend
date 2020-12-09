@@ -1,57 +1,24 @@
+use std::{collections::HashMap, f64::consts::PI};
+
 use actix::prelude::*;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Result};
-use std::collections::HashMap;
-use std::f64::consts::PI;
 
-/// Chat server sends this messages to session
-#[derive(Message)]
-#[rtype(result = "()")]
-pub struct Message(pub String);
+use super::message::{ClientMessage, Connect, Disconnect, Message};
 
-/// Message for chat server communications
-
-/// New chat session is created
-#[derive(Message)]
-#[rtype(result = "()")]
-pub struct Connect {
-    pub id: usize,
-    pub addr: Recipient<Message>,
-}
-
-/// Session is disconnected
-#[derive(Message)]
-#[rtype(result = "()")]
-pub struct Disconnect {
-    pub id: usize,
-}
-
-/// Send message to specific room
-#[derive(Message)]
-#[rtype(result = "()")]
-pub struct ClientMessage {
-    /// Id of the client session
-    pub id: usize,
-    /// Peer message
-    pub msg: String,
-}
-
-/// `ChatServer` manages chat rooms and responsible for coordinating chat
-/// session. implementation is super primitive
-pub struct ChatServer {
+pub struct SensorServer {
     sessions: HashMap<usize, Recipient<Message>>,
 }
 
-impl Default for ChatServer {
-    fn default() -> ChatServer {
-        ChatServer {
+impl Default for SensorServer {
+    fn default() -> SensorServer {
+        SensorServer {
             sessions: HashMap::new(),
         }
     }
 }
 
-impl ChatServer {
-    /// Send message to all users in the room
+impl SensorServer {
     fn send_message(&self, message: &str, skip_id: usize) {
         for (id, addr) in &self.sessions {
             if *id != skip_id {
@@ -61,29 +28,22 @@ impl ChatServer {
     }
 }
 
-/// Make actor from `ChatServer`
-impl Actor for ChatServer {
-    /// We are going to use simple Context, we just need ability to communicate
-    /// with other actors.
+impl Actor for SensorServer {
     type Context = Context<Self>;
 }
 
-/// Handler for Connect message.
-impl Handler<Connect> for ChatServer {
+impl Handler<Connect> for SensorServer {
     type Result = ();
 
     fn handle(&mut self, msg: Connect, _: &mut Context<Self>) {
-        // remove address
         self.sessions.insert(msg.id, msg.addr);
     }
 }
 
-/// Handler for Disconnect message.
-impl Handler<Disconnect> for ChatServer {
+impl Handler<Disconnect> for SensorServer {
     type Result = ();
 
     fn handle(&mut self, msg: Disconnect, _: &mut Context<Self>) {
-        // remove address
         self.sessions.remove(&msg.id);
     }
 }
@@ -118,14 +78,12 @@ fn data_processing(data: &str) -> Result<String> {
     Ok(output.to_string())
 }
 
-/// Handler for Message message.
-impl Handler<ClientMessage> for ChatServer {
+impl Handler<ClientMessage> for SensorServer {
     type Result = ();
 
     fn handle(&mut self, msg: ClientMessage, _: &mut Context<Self>) {
-        self.send_message(msg.msg.as_str(), msg.id);
-        /* if let Ok(data) = data_processing(msg.msg.as_str()) {
-            self.send_message(data.as_str(), msg.id)
-        } */
+        if let Ok(data) = data_processing(msg.msg.as_str()) {
+            self.send_message(data.as_str(), msg.id);
+        }
     }
 }
