@@ -4,6 +4,7 @@ use actix::*;
 use actix_files as fs;
 use actix_web::{web, App, Error, HttpRequest, HttpResponse, HttpServer};
 use actix_web_actors::ws;
+use rand::{thread_rng, Rng};
 
 mod server;
 
@@ -20,7 +21,7 @@ async fn chat_route(
 ) -> Result<HttpResponse, Error> {
     ws::start(
         WsChatSession {
-            id: 0,
+            id: thread_rng().gen::<usize>(),
             hb: Instant::now(),
             addr: srv.get_ref().clone(),
         },
@@ -48,26 +49,11 @@ impl Actor for WsChatSession {
         // we'll start heartbeat process on session start.
         self.hb(ctx);
 
-        // register self in chat server. `AsyncContext::wait` register
-        // future within context, but context waits until this future resolves
-        // before processing any other events.
-        // HttpContext::state() is instance of WsChatSessionState, state is shared
-        // across all routes within application
         let addr = ctx.address();
-        self.addr
-            .send(server::Connect {
-                addr: addr.recipient(),
-            })
-            .into_actor(self)
-            .then(|res, act, ctx| {
-                match res {
-                    Ok(res) => act.id = res,
-                    // something is wrong with chat server
-                    _ => ctx.stop(),
-                }
-                fut::ready(())
-            })
-            .wait(ctx);
+        self.addr.do_send(server::Connect {
+            id: self.id,
+            addr: addr.recipient(),
+        })
     }
 
     fn stopping(&mut self, _: &mut Self::Context) -> Running {

@@ -1,5 +1,4 @@
 use actix::prelude::*;
-use rand::{self, rngs::ThreadRng, Rng};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Result};
 use std::collections::HashMap;
@@ -14,8 +13,9 @@ pub struct Message(pub String);
 
 /// New chat session is created
 #[derive(Message)]
-#[rtype(usize)]
+#[rtype(result = "()")]
 pub struct Connect {
+    pub id: usize,
     pub addr: Recipient<Message>,
 }
 
@@ -40,14 +40,12 @@ pub struct ClientMessage {
 /// session. implementation is super primitive
 pub struct ChatServer {
     sessions: HashMap<usize, Recipient<Message>>,
-    rng: ThreadRng,
 }
 
 impl Default for ChatServer {
     fn default() -> ChatServer {
         ChatServer {
             sessions: HashMap::new(),
-            rng: rand::thread_rng(),
         }
     }
 }
@@ -71,18 +69,12 @@ impl Actor for ChatServer {
 }
 
 /// Handler for Connect message.
-///
-/// Register new session and assign unique id to this session
 impl Handler<Connect> for ChatServer {
-    type Result = usize;
+    type Result = ();
 
-    fn handle(&mut self, msg: Connect, _: &mut Context<Self>) -> Self::Result {
-        // register session with random id
-        let id = self.rng.gen::<usize>();
-        self.sessions.insert(id, msg.addr);
-
-        // send id back
-        id
+    fn handle(&mut self, msg: Connect, _: &mut Context<Self>) {
+        // remove address
+        self.sessions.insert(msg.id, msg.addr);
     }
 }
 
