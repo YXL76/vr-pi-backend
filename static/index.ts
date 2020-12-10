@@ -101,6 +101,20 @@ pc.onicecandidate = (event) => {
   }
 };
 
+const sensor = new AbsoluteOrientationSensor();
+
+void Promise.all([
+  navigator.permissions.query({ name: "accelerometer" }),
+  navigator.permissions.query({ name: "magnetometer" }),
+  navigator.permissions.query({ name: "gyroscope" }),
+]).then((results) => {
+  if (results.every((result) => result.state === "granted")) {
+    sensor.start();
+  } else {
+    console.log("No permissions to use AbsoluteOrientationSensor.");
+  }
+});
+
 const ws = new WebSocket("ws://47.96.250.166:8080/webrtc/");
 
 ws.onmessage = ({ data }: MessageEvent<string>) => {
@@ -112,6 +126,12 @@ ws.onopen = () => {
   void pc.createOffer().then((d) => {
     void pc.setLocalDescription(d).then(() => {
       ws.send(JSON.stringify(d));
+
+      sensor.onreading = () => {
+        if (sensor.quaternion) {
+          ws.send(JSON.stringify(sensor.quaternion));
+        }
+      };
     });
   });
 };
