@@ -13,5 +13,3 @@ actix-web-actors = "3"
 actix-files = "0.4"
 
 rand = "0.7"
-serde = "1"
-serde_json = "1"
