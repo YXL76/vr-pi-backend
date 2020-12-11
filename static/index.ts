@@ -180,17 +180,17 @@ void Promise.all([
   }
 });
 
-const sensorHandler = throttle(({ alpha, gamma }: DeviceOrientationEvent) => {
-  webrtcConn.send(JSON.stringify({ alpha, gamma }));
-}, 16);
+const sensorConn = new WebSocket("wss://www.cangcheng.top/sensor");
 
-const sensorConn = new WebSocket("wss://a4cd3dbc7814.ngrok.io/sensor/");
+const sensorHandler = throttle(({ alpha, gamma }: DeviceOrientationEvent) => {
+  sensorConn.send(JSON.stringify({ alpha, gamma }));
+}, 16);
 
 sensorConn.onopen = () => {
   window.addEventListener("deviceorientation", sensorHandler);
 };
 
-const webrtcConn = new WebSocket("wss://a4cd3dbc7814.ngrok.io/webrtc/");
+const webrtcConn = new WebSocket("wss://www.cangcheng.top/webrtc");
 
 webrtcConn.onmessage = ({ data }: MessageEvent<string>) => {
   const msg = JSON.parse(data) as RTCSessionDescription;
