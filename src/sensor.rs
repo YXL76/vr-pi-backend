@@ -43,7 +43,6 @@ impl Handler<Message> for SensorSession {
 
 impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for SensorSession {
     fn handle(&mut self, msg: Result<ws::Message, ws::ProtocolError>, ctx: &mut Self::Context) {
-        println!("WEBSOCKET MESSAGE: {:?}", msg);
         match msg {
             Ok(ws::Message::Ping(msg)) => {
                 self.hb = Instant::now();

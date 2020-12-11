@@ -43,7 +43,6 @@ impl Handler<Message> for WebrtcSession {
 
 impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WebrtcSession {
     fn handle(&mut self, msg: Result<ws::Message, ws::ProtocolError>, ctx: &mut Self::Context) {
-        println!("WEBSOCKET MESSAGE: {:?}", msg);
         match msg {
             Ok(ws::Message::Ping(msg)) => {
                 self.hb = Instant::now();

@@ -36,6 +36,8 @@
     "webpack-cli": "4.2.0"
   },
   "dependencies": {
-    "aframe": "1.1.0"
+    "@types/lodash.throttle": "4.1.6",
+    "aframe": "1.1.0",
+    "lodash.throttle": "4.1.1"
   }
 }
