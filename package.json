@@ -4,7 +4,7 @@
   "scripts": {
     "build": "webpack --mode production --progress",
     "build::dev": "webpack --mode development --progress",
-    "generate:css": "postcss static/tailwind.css -o static/index.css"
+    "generate:css": "postcss src/tailwind.css -o static/index.css"
   },
   "repository": {
     "type": "git",

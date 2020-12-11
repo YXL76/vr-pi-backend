@@ -5,7 +5,6 @@ target = "es2018";
 
 /**@type {import('webpack').Configuration}*/
 module.exports = {
-  context: resolve(__dirname, "static"),
   stats: {
     assets: false,
     children: false,
@@ -24,7 +23,7 @@ module.exports = {
     minimizer: [new ESBuildMinifyPlugin({ target })],
   },
   entry: {
-    index: resolve(__dirname, "static", "index.ts"),
+    index: resolve(__dirname, "src", "index.ts"),
   },
   output: {
     path: resolve(__dirname, "static"),
