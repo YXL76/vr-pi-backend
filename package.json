@@ -1,5 +1,5 @@
 {
-  "name": "vr-pi-backend",
+  "name": "vrpi-server",
   "version": "1.0.0",
   "scripts": {
     "build": "webpack --mode production --progress",
@@ -8,13 +8,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/YXL76/vr-pi-backend.git"
+    "url": "git+https://github.com/YXL76/vrpi-server.git"
   },
   "author": "YXL <chenxin.lan.76@gmail.com>",
   "bugs": {
-    "url": "https://github.com/YXL76/vr-pi-backend/issues"
+    "url": "https://github.com/YXL76/vrpi-server/issues"
   },
-  "homepage": "https://github.com/YXL76/vr-pi-backend#readme",
+  "homepage": "https://github.com/YXL76/vrpi-server#readme",
   "devDependencies": {
     "@types/aframe": "1.0.2",
     "@types/w3c-generic-sensor": "1.0.3",

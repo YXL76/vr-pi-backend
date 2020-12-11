@@ -4202,9 +4202,9 @@ typescript@^2.2.2:
   languageName: node
   linkType: hard
 
-"vr-pi-backend@workspace:.":
+"vrpi-server@workspace:.":
   version: 0.0.0-use.local
-  resolution: "vr-pi-backend@workspace:."
+  resolution: "vrpi-server@workspace:."
   dependencies:
     "@types/aframe": 1.0.2
     "@types/lodash.throttle": 4.1.6
