@@ -20,15 +20,27 @@ AFRAME.registerComponent<PlayOnClick>("play-on-click", {
   pause: function () {
     window.removeEventListener("click", this.onClick);
   },
-  onClick: function () {
+  onClick: async function () {
     const videoEl = (this.el.getAttribute("material") as {
       src: HTMLVideoElement | null;
     })?.src;
     if (!videoEl) {
-      return;
+      const videoEl =
+        (document.getElementById("remote-video") as HTMLVideoElement) || null;
+
+      if (!videoEl) {
+        return;
+      }
+
+      await videoEl.play();
+      setTimeout(() => {
+        const entity = document.getElementById("aframe-entity") as Entity;
+        entity.setAttribute("material", "shader: flat; src: #remote-video");
+      }, 200);
+    } else {
+      await videoEl.play();
     }
     this.el.object3D.visible = true;
-    void videoEl.play();
   },
 });
 
@@ -90,9 +102,6 @@ pc.ontrack = ({ track, streams }) => {
     el.controls = true;
 
     document.getElementById("aframe-assets")?.appendChild(el);
-
-    const entity = document.getElementById("aframe-entity") as Entity;
-    entity.setAttribute("material", "shader: flat; src: #remote-video");
   }
 };
 
