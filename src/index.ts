@@ -23,7 +23,7 @@ AFRAME.registerComponent<PlayOnClick>("play-on-click", {
   onClick: function () {
     const videoEl = (this.el.getAttribute("material") as {
       src: HTMLVideoElement | null;
-    }).src;
+    })?.src;
     if (!videoEl) {
       return;
     }
