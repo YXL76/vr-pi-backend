@@ -1,4 +1,5 @@
 import "aframe";
+import "webrtc-adapter";
 import type { Entity } from "aframe";
 import throttle from "lodash.throttle";
 
