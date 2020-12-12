@@ -106,11 +106,11 @@ pc.ontrack = ({ track, streams }) => {
   }
 };
 
-/* pc.onicecandidate = (event) => {
-  if (event.candidate === null) {
+pc.onicecandidate = ({ candidate }) => {
+  if (candidate === null) {
     webrtcConn.send(JSON.stringify(pc.localDescription));
   }
-}; */
+};
 
 // const options = { frequency: 50 };
 
@@ -176,11 +176,12 @@ const calaEulerAngles = () => {
   }
 }; */
 
-void Promise.all([
-  navigator.permissions.query({ name: "accelerometer" }),
-  navigator.permissions.query({ name: "magnetometer" }),
-  navigator.permissions.query({ name: "gyroscope" }),
-]).then((results) => {
+(async () => {
+  const results = await Promise.all([
+    navigator.permissions.query({ name: "accelerometer" }),
+    navigator.permissions.query({ name: "magnetometer" }),
+    navigator.permissions.query({ name: "gyroscope" }),
+  ]);
   if (results.every((result) => result.state === "granted")) {
     // relaOrie.start();
     // accl.start();
@@ -188,7 +189,7 @@ void Promise.all([
   } else {
     console.log("No permissions to use AbsoluteOrientationSensor.");
   }
-});
+})().catch(console.log);
 
 const sensorConn = new WebSocket("wss://www.cangcheng.top/sensor");
 
@@ -204,12 +205,11 @@ const webrtcConn = new WebSocket("wss://www.cangcheng.top/webrtc");
 
 webrtcConn.onmessage = ({ data }: MessageEvent<string>) => {
   const msg = JSON.parse(data) as RTCSessionDescription;
-  void pc.setRemoteDescription(new RTCSessionDescription(msg));
+  pc.setRemoteDescription(new RTCSessionDescription(msg)).catch(console.log);
 };
 
-webrtcConn.onopen = () => {
-  void pc
-    .createOffer()
-    .then((d) => pc.setLocalDescription(d))
-    .then(() => webrtcConn.send(JSON.stringify(pc.localDescription)));
+webrtcConn.onopen = async () => {
+  const d = await pc.createOffer();
+  await pc.setLocalDescription(d);
+  // webrtcConn.send(JSON.stringify(pc.localDescription));
 };
