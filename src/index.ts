@@ -21,7 +21,7 @@ AFRAME.registerComponent<PlayOnClick>("play-on-click", {
   pause: function () {
     window.removeEventListener("click", this.onClick);
   },
-  onClick: async function () {
+  onClick: function () {
     const videoEl = (this.el.getAttribute("material") as {
       src: HTMLVideoElement | null;
     })?.src;
@@ -33,13 +33,13 @@ AFRAME.registerComponent<PlayOnClick>("play-on-click", {
         return;
       }
 
-      await videoEl.play();
+      videoEl.play().catch(console.log);
       setTimeout(() => {
         const entity = document.getElementById("aframe-entity") as Entity;
         entity.setAttribute("material", "shader: flat; src: #remote-video");
-      }, 200);
+      }, 1000);
     } else {
-      await videoEl.play();
+      videoEl.play().catch(console.log);
     }
     this.el.object3D.visible = true;
   },
