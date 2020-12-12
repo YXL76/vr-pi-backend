@@ -33,11 +33,13 @@ AFRAME.registerComponent<PlayOnClick>("play-on-click", {
         return;
       }
 
-      videoEl.play().catch(console.log);
-      setTimeout(() => {
+      const playingHandler = () => {
+        videoEl.removeEventListener("playing", playingHandler);
         const entity = document.getElementById("aframe-entity") as Entity;
         entity.setAttribute("material", "shader: flat; src: #remote-video");
-      }, 500);
+      };
+      videoEl.addEventListener("playing", playingHandler);
+      videoEl.play().catch(console.log);
     } else {
       videoEl.play().catch(console.log);
     }
