@@ -37,7 +37,7 @@ AFRAME.registerComponent<PlayOnClick>("play-on-click", {
       setTimeout(() => {
         const entity = document.getElementById("aframe-entity") as Entity;
         entity.setAttribute("material", "shader: flat; src: #remote-video");
-      }, 1000);
+      }, 500);
     } else {
       videoEl.play().catch(console.log);
     }
@@ -100,7 +100,6 @@ pc.ontrack = ({ track, streams }) => {
     el.id = "remote-video";
     el.srcObject = streams[0];
     el.autoplay = true;
-    el.controls = true;
 
     document.getElementById("aframe-assets")?.appendChild(el);
   }
