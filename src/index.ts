@@ -37,6 +37,8 @@ AFRAME.registerComponent<PlayOnClick>("play-on-click", {
         videoEl.removeEventListener("playing", playingHandler);
         const entity = document.getElementById("aframe-entity") as Entity;
         entity.setAttribute("material", "shader: flat; src: #remote-video");
+        const hint = document.getElementById("hint") as Entity;
+        hint.setAttribute("visible", false);
       };
       videoEl.addEventListener("playing", playingHandler);
       videoEl.play().catch(console.log);
@@ -47,7 +49,7 @@ AFRAME.registerComponent<PlayOnClick>("play-on-click", {
   },
 });
 
-interface HideOnPlay {
+/* interface HideOnPlay {
   schema: {
     type: "selector";
   };
@@ -66,14 +68,23 @@ AFRAME.registerComponent<HideOnPlay>("hide-on-play", {
   },
   play: function () {
     if (this.data) {
-      (this.data as EventTarget).addEventListener("playing", this.onPlaying);
-      (this.data as EventTarget).addEventListener("pause", this.onPause);
+      (this.data as HTMLVideoElement).addEventListener(
+        "playing",
+        this.onPlaying
+      );
+      (this.data as HTMLVideoElement).addEventListener("pause", this.onPause);
     }
   },
   pause: function () {
     if (this.data) {
-      (this.data as EventTarget).removeEventListener("playing", this.onPlaying);
-      (this.data as EventTarget).removeEventListener("pause", this.onPause);
+      (this.data as HTMLVideoElement).removeEventListener(
+        "playing",
+        this.onPlaying
+      );
+      (this.data as HTMLVideoElement).removeEventListener(
+        "pause",
+        this.onPause
+      );
     }
   },
   onPlaying: function () {
@@ -82,7 +93,7 @@ AFRAME.registerComponent<HideOnPlay>("hide-on-play", {
   onPause: function () {
     this.el.setAttribute("visible", true);
   },
-});
+});*/
 
 const pc = new RTCPeerConnection({
   iceServers: [
