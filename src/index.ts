@@ -1,7 +1,7 @@
 import "aframe";
 import "webrtc-adapter";
 import type { Entity } from "aframe";
-import throttle from "lodash.throttle";
+// import throttle from "lodash.throttle";
 
 interface PlayOnClick {
   el?: Entity;
@@ -194,12 +194,25 @@ const calaEulerAngles = () => {
 
 const sensorConn = new WebSocket("wss://www.cangcheng.top/sensor");
 
-const sensorHandler = throttle(({ alpha, gamma }: DeviceOrientationEvent) => {
+/* const sensorHandler = throttle(({ alpha, gamma }: DeviceOrientationEvent) => {
   sensorConn.send(JSON.stringify({ alpha, gamma }));
 }, 16);
 
 sensorConn.onopen = () => {
   window.addEventListener("deviceorientation", sensorHandler);
+}; */
+
+let alpha: number | null = 0;
+let gamma: number | null = 0;
+
+sensorConn.onopen = () => {
+  window.addEventListener("deviceorientation", (event) => {
+    alpha = event.alpha;
+    gamma = event.gamma;
+  });
+  setInterval(() => {
+    sensorConn.send(JSON.stringify({ alpha, gamma }));
+  }, 12);
 };
 
 const webrtcConn = new WebSocket("wss://www.cangcheng.top/webrtc");

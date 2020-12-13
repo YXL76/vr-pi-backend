@@ -5,7 +5,7 @@ use actix_web_actors::ws;
 
 use super::server::{ClientMessage, Connect, Disconnect, Message, SensorServer};
 
-const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(5);
+const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(20);
 const CLIENT_TIMEOUT: Duration = Duration::from_secs(10);
 
 pub struct SensorSession {
