@@ -105,6 +105,7 @@ const pc = new RTCPeerConnection({
 
 pc.addTransceiver("video", { direction: "sendrecv" });
 
+// 添加视频流
 pc.ontrack = ({ track, streams }) => {
   if (track.kind === "video") {
     const el = (document.createElement(
@@ -188,6 +189,7 @@ const calaEulerAngles = () => {
   }
 }; */
 
+// 获取权限
 (async () => {
   const results = await Promise.all([
     navigator.permissions.query({ name: "accelerometer" }),
@@ -213,6 +215,7 @@ sensorConn.onopen = () => {
   window.addEventListener("deviceorientation", sensorHandler);
 }; */
 
+// 传感器数据
 let alpha: number | null = 0;
 let gamma: number | null = 0;
 
@@ -221,6 +224,7 @@ sensorConn.onopen = () => {
     alpha = event.alpha;
     gamma = event.gamma;
   });
+  // 周期性发送传感器数据
   setInterval(() => {
     sensorConn.send(JSON.stringify({ alpha, gamma }));
   }, 12);
@@ -228,12 +232,14 @@ sensorConn.onopen = () => {
 
 const webrtcConn = new WebSocket("wss://www.cangcheng.top/webrtc");
 
+// 监听 answer
 webrtcConn.onmessage = ({ data }: MessageEvent<string>) => {
   const msg = JSON.parse(data) as RTCSessionDescription;
   pc.setRemoteDescription(new RTCSessionDescription(msg)).catch(console.log);
 };
 
 webrtcConn.onopen = async () => {
+  // 创建 offer
   const d = await pc.createOffer();
   await pc.setLocalDescription(d);
   // webrtcConn.send(JSON.stringify(pc.localDescription));
