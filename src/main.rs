@@ -47,11 +47,11 @@ async fn main() -> std::io::Result<()> {
     let webrtc_server = server::WebrtcServer::default().start();
     let sensor_server = server::SensorServer::default().start();
 
+    // 启动服务器
     HttpServer::new(move || {
         App::new()
             .data(webrtc_server.clone())
             .data(sensor_server.clone())
-            // redirect to index.html
             .service(web::resource("/").route(web::get().to(|| {
                 HttpResponse::Found()
                     .header("LOCATION", "/static/index.html")
@@ -60,7 +60,7 @@ async fn main() -> std::io::Result<()> {
             // websocket
             .service(web::resource("/webrtc/").to(webrtc_route))
             .service(web::resource("/sensor/").to(sensor_route))
-            // static resources
+            // 静态资源
             .service(fs::Files::new("/static/", "static/"))
     })
     .bind("0.0.0.0:8080")?
